@@ -4,7 +4,6 @@ import jerklib.listeners.IRCEventListener;
 
 public class Channel {
 
-	private jerklib.Channel channel;
 	private final String name;
 	private final Network network;
 
@@ -22,15 +21,11 @@ public class Channel {
 	}
 
 	public void sendText(String text) {
-		this.channel.say(text);
-	}
-
-	public void setChannel(jerklib.Channel channel) {
-		this.channel = channel;
+		this.network.getSession().getChannel(this.name).say(text);
 	}
 
 	public void setIRCEventListener(IRCEventListener listener) {
-		this.channel.getSession().addIRCEventListener(listener);
+		this.network.getSession().addIRCEventListener(listener);
 	}
 
 }

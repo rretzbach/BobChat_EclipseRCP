@@ -1,10 +1,10 @@
 package bobchat.ui;
 
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import bobchat.domain.Channel;
 import bobchat.domain.Network;
 import bobchat.domain.Networks;
 import bobchat.helper.SecondaryIDCodec;
@@ -24,30 +24,44 @@ public class ChannelViews {
 
 	}
 
-	public ChannelViewPresenter getPresenter(ChannelView view) {
+	public void getPresenter(final ChannelView view) {
 		String hostname = SecondaryIDCodec.extractHostname(view.getViewSite()
 				.getSecondaryId());
-		String channelName = SecondaryIDCodec.extractChannelName(view
+		final String channelName = SecondaryIDCodec.extractChannelName(view
 				.getViewSite().getSecondaryId());
 
-		ChannelViewPresenter channelViewPresenter = null;
-		Network network = Networks.getInstance().get(hostname);
-		Channel channel = network.getChannel(channelName);
+		// temporary title as long as the channel was not yet joined
+		view.setPartName("(" + channelName + ")");
 
-		channelViewPresenter = new ChannelViewPresenter(channel, view);
-		return channelViewPresenter;
+		final Network network = Networks.getInstance().get(
+		/* FIXME hostname */"irc.rizon.net");
+		network.join(channelName);
 	}
 
 	public void showView(String hostname, String channelName)
 			throws PartInitException {
-		PlatformUI
-				.getWorkbench()
-				.getActiveWorkbenchWindow()
-				.getActivePage()
-				.showView(
-						ChannelView.ID,
-						SecondaryIDCodec
-								.buildSecondaryId(hostname, channelName),
-						IWorkbenchPage.VIEW_ACTIVATE);
+		String buildSecondaryId = SecondaryIDCodec.buildSecondaryId(hostname,
+				channelName);
+
+		IWorkbenchPage activePage = PlatformUI.getWorkbench()
+				.getActiveWorkbenchWindow().getActivePage();
+
+		ChannelView view = null;
+
+		IViewReference[] viewReferences = activePage.getViewReferences();
+		for (IViewReference iViewReference : viewReferences) {
+			if (iViewReference.getSecondaryId().equals(buildSecondaryId)) {
+				view = (ChannelView) iViewReference.getView(false);
+				break;
+			}
+		}
+
+		if (view == null) {
+			view = (ChannelView) activePage.showView(ChannelView.ID,
+					buildSecondaryId, IWorkbenchPage.VIEW_ACTIVATE);
+		}
+
+		new ChannelViewPresenter(Networks.getInstance().get(hostname)
+				.getChannel(channelName), view);
 	}
 }

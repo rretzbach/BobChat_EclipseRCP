@@ -1,4 +1,4 @@
-package bobchat.ui;
+package bobchat.command;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -18,7 +18,6 @@ public class CommandInterpreter {
 				.getConfigurationElementsFor(ICOMMAND_ID);
 		try {
 			for (IConfigurationElement e : config) {
-				System.out.println("Evaluating extension");
 				final String keyword = e.getAttribute("keyword");
 
 				if (!text.startsWith(keyword + " ")) {

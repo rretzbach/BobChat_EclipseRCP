@@ -26,7 +26,14 @@
             allowMultiple="true"
             class="bobchat.ui.ChannelView"
             id="BobChat.view"
-            name="View">
+            name="ChannelView">
+      </view>
+      <view
+            allowMultiple="false"
+            class="bobchat.ui.ImageView"
+            id="BobChat.imageView"
+            name="ImageView"
+            restorable="true">
       </view>
    </extension>
    <extension
@@ -34,17 +41,14 @@
       <menuContribution
             locationURI="menu:org.eclipse.ui.main.menu">
          <menu
-               label="Preferences">
-            <command
-                  commandId="org.eclipse.ui.window.preferences"
-                  label="Preferences">
-            </command>
-         </menu>
-         <menu
                label="File">
             <command
                   commandId="org.eclipse.ui.file.exit"
                   label="Exit">
+            </command>
+            <command
+                  commandId="org.eclipse.ui.window.preferences"
+                  label="Preferences">
             </command>
          </menu>
       </menuContribution>
@@ -54,7 +58,7 @@
          point="org.eclipse.core.runtime.products">
       <product
             application="BobChat.application"
-            name="RCP Application">
+            name="BobChat">
          <property
                name="windowImages"
                value="icons/alt_window_16.gif,icons/alt_window_32.gif">

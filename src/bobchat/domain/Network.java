@@ -5,7 +5,15 @@ import java.util.Map;
 
 import jerklib.ConnectionManager;
 import jerklib.Session;
+import jerklib.events.ConnectionCompleteEvent;
+import jerklib.events.IRCEvent;
+import jerklib.events.JoinCompleteEvent;
 import jerklib.listeners.IRCEventListener;
+
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PartInitException;
+
+import bobchat.ui.ChannelViews;
 
 public class Network {
 	private final Map<String, Channel> channels;
@@ -16,9 +24,9 @@ public class Network {
 
 	private final String nick;
 
-	private final Session session;
+	private Session session;
 
-	public Network(Session session, String hostname) {
+	public Network(Session session, final String hostname) {
 		this.session = session;
 		this.hostname = hostname;
 		this.nick = session.getNick();
@@ -63,6 +71,10 @@ public class Network {
 		return this.session.getNick();
 	}
 
+	public Session getSession() {
+		return this.session;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -72,10 +84,70 @@ public class Network {
 		return result;
 	}
 
-	public Channel join(String channelName) {
-		Channel channel = new Channel(this, channelName);
-		this.channels.put(channelName, channel);
-		this.session.join(channelName);
-		return channel;
+	public boolean isConnected() {
+		return this.session.isConnected();
+	}
+
+	public void join(final String channelName) {
+		if (this.channels.containsKey(channelName)) {
+			return;
+		}
+
+		this.channels.put(channelName, null);
+
+		final Session currentSession = this.session;
+
+		currentSession.addIRCEventListener(new IRCEventListener() {
+			@Override
+			public void receiveEvent(IRCEvent e) {
+				if (e.getType() == IRCEvent.Type.JOIN_COMPLETE) {
+					removeIRCEventListener(this);
+					final JoinCompleteEvent jce = (JoinCompleteEvent) e;
+
+					if (jce.getChannel().getName().equals(channelName)) {
+						Channel channel = new Channel(Network.this, channelName);
+						Network.this.channels.put(channelName, channel);
+
+						Display.getDefault().asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									ChannelViews.getInstance().showView(
+											"irc.rizon.net"
+											/* FIXME Network.this.hostname */,
+											jce.getChannel().getName());
+								} catch (PartInitException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							}
+						});
+					}
+				}
+			}
+		});
+
+		if (!isConnected()) {
+			currentSession.addIRCEventListener(new IRCEventListener() {
+				@Override
+				public void receiveEvent(IRCEvent e) {
+					if (e.getType() == IRCEvent.Type.CONNECT_COMPLETE) {
+						ConnectionCompleteEvent cce = (ConnectionCompleteEvent) e;
+						currentSession.join(channelName);
+						removeIRCEventListener(this);
+					}
+				}
+			});
+		} else {
+			currentSession.join(channelName);
+		}
+	}
+
+	public void removeIRCEventListener(IRCEventListener listener) {
+		this.session.removeIRCEventListener(listener);
+	}
+
+	public void setSession(Session newSession) {
+		this.session = newSession;
 	}
 }

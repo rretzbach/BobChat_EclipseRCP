@@ -15,11 +15,11 @@ import org.eclipse.ui.part.ViewPart;
 // TODO highlights
 // TODO up/down cycle through previous messages
 // TODO use TextMetrics
+// TODO join all channels on restore (currently only the active view is restored)
 public class ChannelView extends ViewPart {
 	public static final String ID = "BobChat.view"; //$NON-NLS-1$
 	private Text inputText;
 	private StyledText messagesText;
-	private ChannelViewPresenter presenter;
 	private Button sendButton;
 
 	private void createLayout(Composite parent) {
@@ -49,7 +49,7 @@ public class ChannelView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		createLayout(parent);
-		this.presenter = ChannelViews.getInstance().getPresenter(this);
+		ChannelViews.getInstance().getPresenter(this);
 	}
 
 	public Text getInputText() {

@@ -10,6 +10,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
+import bobchat.BC;
+
 public class ColoredNickAppender {
 
 	private final String nick;
@@ -28,6 +30,8 @@ public class ColoredNickAppender {
 		styleRange.start = styledText.getCharCount() - nick.length();
 		styleRange.length = nick.length();
 		styleRange.fontStyle = SWT.BOLD;
+		styleRange.underlineStyle = BC.USER;
+		styleRange.data = nick;
 
 		if (!this.nickColors.containsKey(nick)) {
 			Color color = deriveColor(nick);
